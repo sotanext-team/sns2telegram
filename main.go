@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -91,8 +92,17 @@ func telegramCbHandler(c *gin.Context) {
 	}
 	text := req.Message.Text
 	chatID := req.Message.Chat.ID
-	log.Printf("got text:%v", text)
-	if strings.HasPrefix(text, "/init") {
+
+	log.Printf("got text:%v \n", text)
+	log.Printf("got req:%+v \n", req)
+	adminUsername := os.Getenv("admin_username")
+	if req.Message.From["username"] != adminUsername {
+		log.Printf("got message from %v, ignore", req.Message.From["username"])
+		return
+	}
+	botUserName := os.Getenv("bot_username")
+	prefixInitText := fmt.Sprintf("@%s /init", botUserName)
+	if strings.HasPrefix(text, prefixInitText) {
 		// initialization
 		log.Printf("got /init, start initHandler()")
 		initHandler(c)
@@ -122,21 +132,22 @@ func webhookHandler(c *gin.Context) {
 		})
 		return
 	}
-	i, err := strconv.ParseInt(strchatID, 10, 32)
+	i, err := strconv.ParseInt(strchatID, 10, 64)
 	if err != nil {
 		panic(err)
 	}
-	chatID := int32(i)
+	chatID := int64(i)
 	if db.IsValidChatID(chatID, UUID) {
 		log.Println("valid chatID")
 		reqbodybyte, _ = c.GetRawData()
 		var reqbodyobj map[string]interface{}
 		err = json.Unmarshal(reqbodybyte, &reqbodyobj)
+		log.Printf("got reqbodyobj: %+v \n", reqbodyobj)
 		// if Type=='SubscriptionConfirmation'
 		if reqbodyobj["Type"] == "SubscriptionConfirmation" {
 			subURL := reqbodyobj["SubscribeURL"].(string)
 			msg2send := "click the following subscribe URL to confirm: \n\n" + subURL
-			tg.sendMessage(msg2send, int32tostr(chatID))
+			tg.sendMessage(msg2send, int64tostr(chatID))
 			c.JSON(http.StatusOK, gin.H{
 				"message": "message sent",
 			})
@@ -159,9 +170,6 @@ func webhookHandler(c *gin.Context) {
 		}
 
 		resp, _ := json.MarshalIndent(reqbodyobj, "", "   ")
-		if strchatID == "-776682320" {
-			strchatID = "-1001731272915"
-		}
 		tg.sendMessage(string(resp), strchatID)
 		c.JSON(http.StatusOK, gin.H{
 			"message": "message sent",

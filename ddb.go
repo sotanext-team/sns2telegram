@@ -49,8 +49,10 @@ func NewDdbHandler() (*DynamoDBHandler, error) {
 }
 
 // GetItem ...
-func (db *DynamoDBHandler) GetItem(chatID int32) (Item, error) {
+func (db *DynamoDBHandler) GetItem(chatID int64) (Item, error) {
+	log.Println("strChat", chatID)
 	strChatID := strconv.FormatInt(int64(chatID), 10)
+	log.Println("strChatID:", strChatID)
 	result, err := db.svc.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -59,6 +61,7 @@ func (db *DynamoDBHandler) GetItem(chatID int32) (Item, error) {
 			},
 		},
 	})
+	log.Println("Result:", result)
 
 	if err != nil {
 		log.Println(err.Error())
@@ -79,7 +82,7 @@ func (db *DynamoDBHandler) GetItem(chatID int32) (Item, error) {
 }
 
 // IsValidChatID ...
-func (db *DynamoDBHandler) IsValidChatID(chatID int32, UUID string) bool {
+func (db *DynamoDBHandler) IsValidChatID(chatID int64, UUID string) bool {
 	item, err := db.GetItem(chatID)
 	if err != nil {
 		log.Printf("got error: %v", err)
