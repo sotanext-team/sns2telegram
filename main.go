@@ -22,7 +22,7 @@ var reqbodybyte []byte
 
 // Chat ...
 type Chat struct {
-	ID    int32  `json:"id"`
+	ID    int64  `json:"id"`
 	Title string `json:"title"`
 	Type  string `json:"type"`
 }
@@ -52,6 +52,10 @@ func init() {
 }
 
 func int32tostr(i int32) string {
+	return strconv.FormatInt(int64(i), 10)
+}
+
+func int64tostr(i int64) string {
 	return strconv.FormatInt(int64(i), 10)
 }
 
@@ -94,7 +98,7 @@ func telegramCbHandler(c *gin.Context) {
 		initHandler(c)
 		return
 	}
-	tg.sendMessage("unknown command", int32tostr(chatID))
+	tg.sendMessage("unknown command", int64tostr(chatID))
 	c.JSON(http.StatusOK, gin.H{
 		"message": "unknown command",
 	})
@@ -155,6 +159,9 @@ func webhookHandler(c *gin.Context) {
 		}
 
 		resp, _ := json.MarshalIndent(reqbodyobj, "", "   ")
+		if strchatID == "-776682320" {
+			strchatID = "-1001731272915"
+		}
 		tg.sendMessage(string(resp), strchatID)
 		c.JSON(http.StatusOK, gin.H{
 			"message": "message sent",

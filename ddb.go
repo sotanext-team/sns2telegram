@@ -94,7 +94,7 @@ func (db *DynamoDBHandler) IsValidChatID(chatID int32, UUID string) bool {
 }
 
 // CreateItem ...
-func (db *DynamoDBHandler) CreateItem(chatID int32) (string, string, error) {
+func (db *DynamoDBHandler) CreateItem(chatID int64) (string, string, error) {
 	u2 := uuid.NewV4()
 	item := Item{
 		ID:        u2.String(),

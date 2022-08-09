@@ -142,5 +142,5 @@ Yes, you can deploy your sns2telegram stack in one region with SNS topics in oth
 
 ```
 GOOS=linux go build .
-zip main.zip sns2telegram
+zip sns2telegram.zip sns2telegram
 ```
