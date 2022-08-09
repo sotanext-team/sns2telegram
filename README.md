@@ -56,7 +56,8 @@ OK. Our application should be all configured. Let's cURL the Telegram API to con
 ```bash
 my_bot_token=ENTER YOUR TELEGRAM TOKEN HERE
 url_to_send_updates_to=ENTER YOUR WebHookURL HERE
-curl https://api.telegram.org/bot${my_bot_token}/setWebhook?url=${url_to_send_updates_to}
+url=https://api.telegram.org/bot${my_bot_token}/setWebhook?url=${url_to_send_updates_to}
+curl $url
 ```
 
 Response
