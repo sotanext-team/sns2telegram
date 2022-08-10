@@ -101,7 +101,12 @@ func telegramCbHandler(c *gin.Context) {
 		return
 	}
 	botUserName := os.Getenv("bot_username")
-	prefixInitText := fmt.Sprintf("@%s /init", botUserName)
+
+	if !strings.HasPrefix(text, "command @"+botUserName) {
+		log.Printf("not command")
+		return
+	}
+	prefixInitText := fmt.Sprintf("command @%s /init", botUserName)
 	if strings.HasPrefix(text, prefixInitText) {
 		// initialization
 		log.Printf("got /init, start initHandler()")
