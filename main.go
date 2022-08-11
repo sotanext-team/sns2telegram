@@ -148,6 +148,7 @@ func webhookHandler(c *gin.Context) {
 		var reqbodyobj map[string]interface{}
 		err = json.Unmarshal(reqbodybyte, &reqbodyobj)
 		log.Printf("got reqbodyobj: %+v \n", reqbodyobj)
+		alert := false
 		// if Type=='SubscriptionConfirmation'
 		if reqbodyobj["Type"] == "SubscriptionConfirmation" {
 			subURL := reqbodyobj["SubscribeURL"].(string)
@@ -167,18 +168,27 @@ func webhookHandler(c *gin.Context) {
 				log.Errorf("json.Unmarshal got err: %v", err)
 				return
 			}
-			reqbodyobj["Message"] = msgobj
+			reqbodyobj["Message"] = fmt.Sprintf("AlarmName: %s\n\nAlarmDescription: %s", msgobj["AlarmName"], msgobj["AlarmDescription"])
+			alert = true
 		}
 		// remove ignoreAttributes
 		for i := range ignoreAttributes {
 			delete(reqbodyobj, ignoreAttributes[i])
 		}
 
-		resp, _ := json.MarshalIndent(reqbodyobj, "", "   ")
-		tg.sendMessage(string(resp), strchatID)
-		c.JSON(http.StatusOK, gin.H{
-			"message": "message sent",
-		})
+		if alert == true {
+			tg.sendMessage(reqbodyobj["Message"].(string), strchatID)
+			c.JSON(http.StatusOK, gin.H{
+				"message": "message sent",
+			})
+		} else {
+			resp, _ := json.MarshalIndent(reqbodyobj, "", "   ")
+			tg.sendMessage(string(resp), strchatID)
+			c.JSON(http.StatusOK, gin.H{
+				"message": "message sent",
+			})
+		}
+
 	} else {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Invalid ChatID or UUID",
